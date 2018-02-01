@@ -29,17 +29,19 @@ li a:hover:not(.active) {
 .active {
     background-color: #4CAF50;
 }
+
+
 </style>
 </head>
 <body>
 
 <ul>
   <li><a href="{{ path('home') }}">Home</a></li>
+  <li><a href="{{ path('usuario_index') }}">Usuarios</a></li>
   <li><a href="{{ path('ranking') }}">Ranking</a></li>
   <li><a href="{{ path('login') }}">Login</a></li>
   <li><a href="{{ path('register') }}">Register</a></li>
   <li><a href="{{ path('cards') }}">Cards</a></li>
-  <li><a href="{{ path('createcard') }}">Create Card</a></li>
 
 </ul>
 {% block body %}

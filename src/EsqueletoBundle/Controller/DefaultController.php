@@ -3,58 +3,90 @@
 namespace EsqueletoBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use EsqueletoBundle\Entity\Usuario;
+use EsqueletoBundle\Entity\Cartas;
+use Symfony\Component\HttpFoundation\Request;
+use EsqueletoBundle\Entity\Login;
+use EsqueletoBundle\Form\LoginType;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+
+
 
 class DefaultController extends Controller
 {
-    /**
-     * @Route("/home", name="home")
-     */
-    public function indexAction()
+
+  /**
+   * @Route("/register", name="register")
+   */
+  public function registerAction(Request $request)
     {
-        $repository = $this->getDoctrine()->getRepository('EsqueletoBundle:Eventos');
-        $clash = $repository->findAll();
-          return $this->render('EsqueletoBundle:Default:index.html.twig',array("royale"=>$clash));
+        // 1) build the form
+        $usuario = new Login();
+        $form = $this->createForm(LoginType::class, $usuario);
+
+        // 2) handle the submit (will only happen on POST)
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+
+            // 3) Encode the password (you could also do this via Doctrine listener)
+            $password = $this->get('security.password_encoder')->encodePassword($usuario, $usuario->getPlainPassword());
+            $usuario->setPassword($password);
+
+            // 4) save the User!
+            $roles = ["ROLE_ADMIN"];
+            $usuario->setRoles($roles);
+            $DB = $this->getDoctrine()->getManager();
+            $DB->persist($usuario);
+            $DB->flush();
+
+            // ... do any other work - like sending them an email, etc
+            // maybe set a "flash" success message for the user
+
+            return $this->redirectToRoute('home');
+        }
+        return $this->render('EsqueletoBundle:Default:register.html.twig',array('form' => $form->createView()));
     }
+
 
     /**
      * @Route("/ranking", name="ranking")
      */
     public function rankingAction()
     {
-        return $this->render('EsqueletoBundle:Default:ranking.html.twig');
+        $repository = $this->getDoctrine()->getRepository('EsqueletoBundle:Usuario');
+        $clash = $repository->findAll();
+          return $this->render('EsqueletoBundle:Default:ranking.html.twig',array("royale"=>$clash));
     }
 
     /**
-     * @Route("/login", name="login")
+     * @Route("/home", name="home")
      */
-    public function loginAction()
+    public function indexAction()
     {
-        return $this->render('EsqueletoBundle:Default:login.html.twig');
+        return $this->render('EsqueletoBundle:Default:index.html.twig');
     }
 
     /**
-     * @Route("/register", name="register")
+     * @Route("/admin", name="admin")
      */
-    public function registerAction()
+    public function adminAction()
     {
-        return $this->render('EsqueletoBundle:Default:register.html.twig');
+        return $this->render('EsqueletoBundle:Default:index.html.twig');
     }
+
+
+
 
     /**
      * @Route("/cards", name="cards")
      */
     public function cardsAction()
     {
-        return $this->render('EsqueletoBundle:Default:cards.html.twig');
+      $repository = $this->getDoctrine()->getRepository('EsqueletoBundle:Cartas');
+      $clash = $repository->findAll();
+        return $this->render('EsqueletoBundle:Default:cards.html.twig',array("royale"=>$clash));
     }
 
-    /**
-     * @Route("/createcard", name="createcard")
-     */
-    public function createCardAction()
-    {
-        return $this->render('EsqueletoBundle:Default:createcard.html.twig');
-    }
 
 }
